@@ -32,7 +32,7 @@ light_elements <- light_elements_raw %>%
              site %in% c('CM', 'BEL') ~ "Composite",
              site %in% c("BN") ~ "Iron",
              site %in% c('UNID') ~ "Unknown"))) %>% 
-  select(id, regno, site, class, construction, year, place, everything()) %>% distinct() %>% 
+  select(id, regno, site, class, construction, year, place, everything(), -`...1`, -context, -Thickness, -Yb_M1) %>% distinct() %>% 
   filter(id %notin% c(120L, 121L, 115L, 47L, 118L))
 
 write_csv(light_elements, "data/pXRF_light.csv")
