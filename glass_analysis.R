@@ -41,6 +41,12 @@ colours <- c('BAT'='red',
              'TR' = 'gold',
              'UNID' = 'mediumseagreen') #set plotting colours
 
+shapes <- c("Colonial" = 15,
+             "Dutch" = 16,
+             "Trial" = 18,
+             "Unknown" = 3
+             ) #set plotting colours
+
 ## PCA
 
 #Function to compute variance explained
@@ -60,7 +66,9 @@ pca_light <- pXRF_light %>% recipe(~.) %>%
   step_pca(all_predictors()) %>% prep()
 
 #Compute PCA for heavy elements
-pca_heavy <- pXRF_heavy %>% recipe(~.) %>%
+pca_heavy <- pXRF_heavy %>%
+  filter(site != 'TR') %>% 
+  recipe(~.) %>%
   update_role(all_of(id_vars), new_role = "id") %>%
   step_normalize(all_predictors()) %>%
   step_pca(all_predictors()) %>% prep()
@@ -71,7 +79,8 @@ pca_plot_light <-
   ggplot(aes(PC1, PC2)) +
   geom_point(aes(color = site, shape=class), alpha = 0.7, size = 2) +
   scale_color_manual(values = colours) +
-  labs(title = "Light Elements",
+  scale_shape_manual(values = shapes) +
+  labs(title = "PCA Light Elements",
        colour = "Site",
        shape = "Period",
        x=var_ex(pca_light, 1),
@@ -83,7 +92,8 @@ pca_plot_heavy <-
   ggplot(aes(PC1, PC2)) +
   geom_point(aes(color = site, shape=class), alpha = 0.7, size = 2) +
   scale_color_manual(values = colours) +
-  labs(title = "Heavy Elements",
+  scale_shape_manual(values = shapes) +
+  labs(title = "PCA Heavy Elements",
        colour = "Site",
        shape = "Period",
        x=var_ex(pca_heavy, 1),
@@ -92,4 +102,31 @@ pca_plot_heavy <-
 pcas <- pca_plot_light + pca_plot_heavy +
   plot_layout(guides = 'collect')
 
+pcas
+
 ggsave("output/pcas.png",pcas, width=9, height=4.5)
+
+# Heavy elements, no Zeewijk but with Trial
+
+#Compute PCA for heavy elements
+pca_trial <- pXRF_heavy %>%
+  filter(site != 'ZW') %>% 
+  recipe(~.) %>%
+  update_role(all_of(id_vars), new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors()) %>% prep()
+
+pca_plot_trial <- 
+  juice(pca_trial) %>%
+  ggplot(aes(PC1, PC2)) +
+  geom_point(aes(color = site, shape=class), alpha = 0.7, size = 2) +
+  scale_color_manual(values = colours) +
+  scale_shape_manual(values = shapes) +
+  labs(title = "PCA - Heavy Elements with Trial",
+       colour = "Site",
+       shape = "Period",
+       x=var_ex(pca_trial, 1),
+       y=var_ex(pca_trial, 2))
+pca_plot_trial
+
+ggsave("output/pca_trial.png",pca_plot_trial, width=5, height=4.5)

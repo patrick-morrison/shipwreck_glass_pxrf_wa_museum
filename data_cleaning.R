@@ -33,7 +33,8 @@ light_elements <- light_elements_raw %>%
              site %in% c("BN") ~ "Iron",
              site %in% c('UNID') ~ "Unknown"))) %>% 
   select(id, regno, site, class, construction, year, place, everything(), -`...1`, -context, -Thickness, -Yb_M1) %>% distinct() %>% 
-  filter(id %notin% c(120L, 121L, 115L, 47L, 118L))
+  filter(id %notin% c(120L, 121L, 115L, 47L, 118L)) %>% 
+  filter(site != 'Beer')
 
 write_csv(light_elements, "data/pXRF_light.csv")
 
@@ -70,7 +71,8 @@ heavy_elements <- heavy_elements_raw %>%
     class = as.factor(
       case_when(
         site %in% c('BAT', 'GT', 'ZT', 'ZW') ~ "Dutch",
-        site %in% c('CM', 'LJ', 'BEL', "BN", "RP", "TR") ~ "Colonial",
+        site %in% c('CM', 'LJ', 'BEL', "BN", "RP") ~ "Colonial",
+        site %in% c('TR') ~ "Trial",
         site %in% c('UNID') ~ "Unknown",
       )),
     year = case_when(
