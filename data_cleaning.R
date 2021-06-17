@@ -1,8 +1,9 @@
-#Data cleaning
+# Data cleaning ----
 library(tidyverse)
 library(readxl)
 `%notin%` <- Negate(`%in%`)
 
+## Light elememts ----
 light_elements_raw <- read_excel("data/raw/tracer_elements_light_glass_july2020_final.xlsx", 
                            sheet = "Points")
 
@@ -32,11 +33,14 @@ light_elements <- light_elements_raw %>%
              site %in% c('CM', 'BEL') ~ "Composite",
              site %in% c("BN") ~ "Iron",
              site %in% c('UNID') ~ "Unknown"))) %>% 
-  select(id, regno, site, class, construction, year, place, everything(), -`...1`, -context, -Thickness, -Yb_M1) %>% distinct() %>% 
+  select(id, regno, site, class, construction, year, place, everything(),
+         -`...1`, -context, -Thickness, -Yb_M1) %>% distinct() %>% 
   filter(id %notin% c(120L, 121L, 115L, 47L, 118L)) %>% 
   filter(site != 'Beer')
 
 write_csv(light_elements, "data/pXRF_light.csv")
+
+## Heavy elememts ----
 
 heavy_elements_raw <- read_excel("data/raw/tracer_elements_heavy_glass_may2021_final_trial.xlsx", 
                            sheet = "Points")
@@ -95,6 +99,11 @@ heavy_elements <- heavy_elements_raw %>%
         site %in% c('UNID') ~ "Unknown",
       ))) %>% 
   filter(regno %notin% c("trueblank07", "SiO2")) %>% 
-  select(id, regno, site, class, construction, year, place, everything()) %>% distinct()
+  select(id, regno, site, class, construction, year, place, everything()) %>%
+  distinct()
 
 write_csv(heavy_elements, "data/pXRF_heavy.csv")
+
+## Clean up ----
+
+rm(`%notin%`, heavy_elements, heavy_elements_raw, light_elements, light_elements_raw, light_meta)

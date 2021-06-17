@@ -1,13 +1,14 @@
-#Complete analysis of pXRF data
+# Complete analysis of pXRF data ----
 
 library(tidyverse)
 library(tidymodels)
 library(patchwork)
+`%notin%` <- Negate(`%in%`)
 
 pXRF_light_raw <- read_csv("data/pXRF_light.csv")
 pXRF_heavy_raw <- read_csv("data/pXRF_heavy.csv")
 
-## Normalise
+## Normalise ----
 
 normalise <- function (value, against) {return(value/against)}
 
@@ -27,7 +28,7 @@ pXRF_heavy <- pXRF_heavy_raw %>%
 
 rm(pXRF_heavy_raw)
 
-## Plotting setup
+##Plotting setup ---- 
 theme_set(theme_bw())
 colours <- c('BAT'='red',
              'GT'='magenta',
@@ -47,25 +48,25 @@ shapes <- c("Colonial" = 15,
              "Unknown" = 3
              ) #set plotting colours
 
-## PCA
+## PCA ----
 
-#Function to compute variance explained
+### Function to compute variance explained
 var_ex <- function(pca, pc) {
   sdev <- pca$steps[[2]]$res$sdev
   var <- round(sdev^2 / sum(sdev^2),3)*100
   paste0('PC',pc,': ', var[pc], '%')
 }
 
-#ID Variables
+### Function to compute variance explained
 id_vars <- c('id', 'regno', 'site', 'class', 'construction', 'year', 'place')
 
-#Compute PCA for light elements
+### Function to compute variance explained
 pca_light <- pXRF_light %>% recipe(~.) %>%
   update_role(all_of(id_vars), new_role = "id") %>%
   step_normalize(all_predictors()) %>%
   step_pca(all_predictors()) %>% prep()
 
-#Compute PCA for heavy elements
+### Function to compute variance explained
 pca_heavy <- pXRF_heavy %>%
   filter(site != 'TR') %>% 
   recipe(~.) %>%
@@ -106,11 +107,11 @@ pcas
 
 ggsave("output/pcas.png",pcas, width=9, height=4.5)
 
-# Heavy elements, no Zeewijk but with Trial
+## Trial PCA ----
 
-#Compute PCA for heavy elements
+#Compute PCA for heavy elements with Trial, but without ZW, ZT or UNIDs
 pca_trial <- pXRF_heavy %>%
-  filter(site != 'ZW') %>% 
+  filter(site %notin% c('ZW',"UNID", "ZT")) %>% 
   recipe(~.) %>%
   update_role(all_of(id_vars), new_role = "id") %>%
   step_normalize(all_predictors()) %>%
