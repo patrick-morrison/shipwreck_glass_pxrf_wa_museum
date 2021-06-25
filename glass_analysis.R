@@ -218,3 +218,4 @@ nacl_light <- pXRF_light %>% filter(site != "TR") %>%
   labs(title= "Na and Cl", subtitle = paste0('Correlation: ', round(cor(pXRF_light$Na_K12, pXRF_light$Cl_K12),2))) 
 
 femn_light + nacl_light + plot_layout(guides = 'collect')
+ggsave("output/light_elements.png", width=9, height=4.5)
