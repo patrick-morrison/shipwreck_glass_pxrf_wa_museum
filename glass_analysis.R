@@ -202,3 +202,19 @@ pca_plot_trial + pc_year + plot_layout(guides = 'collect')
 
 ggsave("output/pca_trial.png", width=9, height=4.5)
 #Figure 5. PCA with Trial included, and ZW/ZT removed. Trial is closest in time to Batavia but is English. The fact it plots with the colonial wrecks indicates PC1 reflects manufacture/origin rather than period or time underwater
+
+## Light elements ----
+
+#Weathering indicated by clusters on Fe and Mn?
+femn_light <- pXRF_light %>% filter(site != "TR") %>% 
+  ggplot(aes(Fe_K12, Mn_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
+  labs(title= "Fe and Mn", subtitle = paste0('Correlation: ', round(cor(pXRF_light$Fe_K12, pXRF_light$Mn_K12),2))) 
+
+#Salt water is having an effect, there is a weak correlation between Na and Cl
+nacl_light <- pXRF_light %>% filter(site != "TR") %>% 
+  ggplot(aes(Na_K12, Cl_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
+  labs(title= "Na and Cl", subtitle = paste0('Correlation: ', round(cor(pXRF_light$Na_K12, pXRF_light$Cl_K12),2))) 
+
+femn_light + nacl_light + plot_layout(guides = 'collect')
