@@ -128,7 +128,7 @@ pca_heavy %>%
   tidy(2) %>% 
   filter(component %in% paste0("PC", 1:2)) %>%
   group_by(component) %>%
-  top_n(8, abs(value)) %>%
+  top_n(7, abs(value)) %>%
   ungroup() %>%
   mutate(terms = reorder_within(terms, abs(value), component)) %>%
   ggplot(aes(value, terms, fill = value > 0)) +
@@ -144,11 +144,13 @@ ggsave("output/pca_heavy_loadings.png", width=4, height=2)
 
 # Dutch wrecks have more Ba, Rb, K, Mn, V, As, and less Y.
 
-rbk <- ggplot(pXRF_heavy, aes(Rb_K12, K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+rbk <- pXRF_heavy %>% filter(site != "TR") %>% 
+ggplot(aes(Rb_K12, K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
   labs(title= "Rb and K", subtitle = paste0('Correlation: ', round(cor(pXRF_heavy$Rb_K12, pXRF_heavy$K_K12),2))) 
 
-k_year <- ggplot(pXRF_heavy, aes(reorder(site, year), K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+k_year <- pXRF_heavy %>% filter(site != "TR") %>% 
+  ggplot(aes(reorder(site, year), K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10() + labs(x = 'Site (ordered by wrecking year, youngest to the left)', title="K vs Year Wrecked", subtitle = "Similar trend in Ba, Rb, K, Mn, V & As ")
 
 rbk + k_year + plot_layout(guides = 'collect')
@@ -161,13 +163,13 @@ ggsave("output/rbk_and_kyear.png", width=9, height=4.5)
 pXRF_heavy %>% arrange(-Fe_K12) %>% select(regno, Fe_K12) %>% top_n(10)
 #remove ZT3380, which is an order of a magnitude higher than the others, and we noted it was on an iron stain.
 
-pXRF_heavy %>% filter(regno != "ZT3380") %>% 
+pXRF_heavy %>% filter(regno != "ZT3380") %>% filter(site != "TR") %>% 
 ggplot(aes(construction, Fe_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1.5, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10()
 ggsave("output/iron_construction.png", width=5, height=3.5)
 
 # It looks like site is a factor here, with iron and composite wrecks all having higher levels of iron. However, the ranger overlaps.
-
+# Figure 4. Iron levels tend to be higher in iron and composite ships, but are within variation for wooden ones. One ZT removed with an Fe_K12 count of 30.9, because of visible iron staining. However, this is based on a single artefact from an iron wreck, and so needs much more work.
 ## Trial PCA ----
 
 #Compute PCA for heavy elements with Trial, but without ZW, ZT or UNIDs
@@ -199,3 +201,4 @@ pc_year <- juice(pca_trial) %>% ggplot(aes(PC1, year)) +
 pca_plot_trial + pc_year + plot_layout(guides = 'collect')
 
 ggsave("output/pca_trial.png", width=9, height=4.5)
+#Figure 5. PCA with Trial included, and ZW/ZT removed. Trial is closest in time to Batavia but is English. The fact it plots with the colonial wrecks indicates PC1 reflects manufacture/origin rather than period or time underwater
