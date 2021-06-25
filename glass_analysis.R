@@ -112,12 +112,14 @@ ggsave("output/pcas.png",pcas, width=9, height=4.5)
 
 #Summaries of all elements
 pivot_longer(pXRF_light, Al_K12:Zn_K12) %>% 
-  ggplot(aes(site, value)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
+  ggplot(aes(site, value)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
   scale_color_manual(values = colours) + facet_wrap(~name, scales = 'free')
 ggsave("output/elements_light.pdf", width = 22, height = 16)
 
 pivot_longer(pXRF_heavy, Ba_K12:Zr_L1) %>% 
-  ggplot(aes(site, value)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
+  ggplot(aes(site, value)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
   scale_color_manual(values = colours) + facet_wrap(~name, scales = 'free')
 ggsave("output/elements_heavy.pdf", width = 22, height = 16)
 
@@ -145,13 +147,18 @@ ggsave("output/pca_heavy_loadings.png", width=4, height=2)
 # Dutch wrecks have more Ba, Rb, K, Mn, V, As, and less Y.
 
 rbk <- pXRF_heavy %>% filter(site != "TR") %>% 
-ggplot(aes(Rb_K12, K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+ggplot(aes(Rb_K12, K_K12)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
-  labs(title= "Rb and K", subtitle = paste0('Correlation: ', round(cor(pXRF_heavy$Rb_K12, pXRF_heavy$K_K12),2))) 
+  labs(title= "Rb and K",
+       subtitle = paste0('Correlation: ', round(cor(pXRF_heavy$Rb_K12, pXRF_heavy$K_K12),2))) 
 
 k_year <- pXRF_heavy %>% filter(site != "TR") %>% 
-  ggplot(aes(reorder(site, year), K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
-  scale_color_manual(values = colours) + scale_y_log10() + labs(x = 'Site (ordered by wrecking year, youngest to the left)', title="K vs Year Wrecked", subtitle = "Similar trend in Ba, Rb, K, Mn, V & As ")
+  ggplot(aes(reorder(site, year), K_K12)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10() +
+  labs(x = 'Site (ordered by wrecking year, youngest to the left)',
+       title="K vs Year Wrecked", subtitle = "Similar trend in Ba, Rb, K, Mn, V & As ")
 
 rbk + k_year + plot_layout(guides = 'collect')
 ggsave("output/rbk_and_kyear.png", width=9, height=4.5)
@@ -161,15 +168,20 @@ ggsave("output/rbk_and_kyear.png", width=9, height=4.5)
 ### Iron ----
 
 pXRF_heavy %>% arrange(-Fe_K12) %>% select(regno, Fe_K12) %>% top_n(10)
-#remove ZT3380, which is an order of a magnitude higher than the others, and we noted it was on an iron stain.
+#remove ZT3380, which was on an iron stain, and much higher than the others
 
 pXRF_heavy %>% filter(regno != "ZT3380") %>% filter(site != "TR") %>% 
-ggplot(aes(construction, Fe_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1.5, alpha=0.7) +
+ggplot(aes(construction, Fe_K12)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1.5, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10()
 ggsave("output/iron_construction.png", width=5, height=3.5)
 
-# It looks like site is a factor here, with iron and composite wrecks all having higher levels of iron. However, the ranger overlaps.
-# Figure 4. Iron levels tend to be higher in iron and composite ships, but are within variation for wooden ones. One ZT removed with an Fe_K12 count of 30.9, because of visible iron staining. However, this is based on a single artefact from an iron wreck, and so needs much more work.
+# It looks like site is a factor here, with iron and composite wrecks all having higher levels of iron. 
+# Figure 4. Iron levels tend to be higher in iron and composite ships, 
+#but are within variation for wooden ones. 
+#One ZT removed with an Fe_K12 count of 30.9, because of visible iron staining.
+#However, this is based on a single artefact from an iron wreck, and so needs much more work.
+
 ## Trial PCA ----
 
 #Compute PCA for heavy elements with Trial, but without ZW, ZT or UNIDs
@@ -201,21 +213,28 @@ pc_year <- juice(pca_trial) %>% ggplot(aes(PC1, year)) +
 pca_plot_trial + pc_year + plot_layout(guides = 'collect')
 
 ggsave("output/pca_trial.png", width=9, height=4.5)
-#Figure 5. PCA with Trial included, and ZW/ZT removed. Trial is closest in time to Batavia but is English. The fact it plots with the colonial wrecks indicates PC1 reflects manufacture/origin rather than period or time underwater
+#Figure 5. PCA with Trial included, and ZW/ZT removed.
+#Trial is closest in time to Batavia but is English. 
+#The fact it plots with the colonial wrecks indicates PC1 reflects 
+#manufacture/origin rather than period or time underwater.
 
 ## Light elements ----
 
 #Weathering indicated by clusters on Fe and Mn?
 femn_light <- pXRF_light %>% filter(site != "TR") %>% 
-  ggplot(aes(Fe_K12, Mn_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  ggplot(aes(Fe_K12, Mn_K12)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
-  labs(title= "Fe and Mn", subtitle = paste0('Correlation: ', round(cor(pXRF_light$Fe_K12, pXRF_light$Mn_K12),2))) 
+  labs(title= "Fe and Mn",
+       subtitle = paste0('Correlation: ', round(cor(pXRF_light$Fe_K12, pXRF_light$Mn_K12),2))) 
 
 #Salt water is having an effect, there is a weak correlation between Na and Cl
 nacl_light <- pXRF_light %>% filter(site != "TR") %>% 
-  ggplot(aes(Na_K12, Cl_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  ggplot(aes(Na_K12, Cl_K12)) +
+  geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
   scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
-  labs(title= "Na and Cl", subtitle = paste0('Correlation: ', round(cor(pXRF_light$Na_K12, pXRF_light$Cl_K12),2))) 
+  labs(title= "Na and Cl",
+       subtitle = paste0('Correlation: ', round(cor(pXRF_light$Na_K12, pXRF_light$Cl_K12),2))) 
 
 femn_light + nacl_light + plot_layout(guides = 'collect')
 ggsave("output/light_elements.png", width=9, height=4.5)
