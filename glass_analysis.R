@@ -2,6 +2,7 @@
 
 library(tidyverse)
 library(tidymodels)
+library(tidytext)
 library(patchwork)
 `%notin%` <- Negate(`%in%`)
 
@@ -131,3 +132,36 @@ pca_plot_trial <-
 pca_plot_trial
 
 ggsave("output/pca_trial.png",pca_plot_trial, width=5, height=4.5)
+
+## Individual elements ----
+
+pca_heavy %>%
+  prep() %>% 
+  tidy(2) %>% 
+  filter(component %in% paste0("PC", 1:2)) %>%
+  group_by(component) %>%
+  top_n(8, abs(value)) %>%
+  ungroup() %>%
+  mutate(terms = reorder_within(terms, abs(value), component)) %>%
+  ggplot(aes(value, terms, fill = value > 0)) +
+  geom_col() +
+  facet_wrap(~component, scales = "free_y") +
+  scale_y_reordered() +
+  labs(
+    x = "Absolute value of contribution",
+    y = NULL)  +
+  theme(legend.position = "none")
+
+ggsave("output/pca_heavy_loadings.png", width=4, height=2)
+
+# Dutch wrecks have more Ba, Rb, K, Mn, V, As, and less Y.
+
+pivot_longer(pXRF_heavy, Ba_K12:Zr_L1) %>% 
+  ggplot(aes(site, value)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
+  scale_color_manual(values = colours) + facet_wrap(~name, scales = 'free')
+ggsave("output/elements_heavy.pdf", width = 22, height = 16)
+## From this we can see that the elements of interest are, 
+
+ggplot(pXRF_heavy, aes(Rb_K12, K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() + labs(title= "Rb and K", subtitle = paste0(''))
+
