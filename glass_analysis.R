@@ -112,7 +112,7 @@ ggsave("output/pcas.png",pcas, width=9, height=4.5)
 
 #Compute PCA for heavy elements with Trial, but without ZW, ZT or UNIDs
 pca_trial <- pXRF_heavy %>%
-  filter(site %notin% c('ZW',"UNID", "ZT")) %>% 
+  filter(site %notin% c('ZW', "UNID", "ZT")) %>% 
   recipe(~.) %>%
   update_role(all_of(id_vars), new_role = "id") %>%
   step_normalize(all_predictors()) %>%
@@ -135,6 +135,24 @@ ggsave("output/pca_trial.png",pca_plot_trial, width=5, height=4.5)
 
 ## Individual elements ----
 
+#Summaries of all elements
+pivot_longer(pXRF_light, Al_K12:Zn_K12) %>% 
+  ggplot(aes(site, value)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
+  scale_color_manual(values = colours) + facet_wrap(~name, scales = 'free')
+ggsave("output/elements_light.pdf", width = 22, height = 16)
+
+pivot_longer(pXRF_heavy, Ba_K12:Zr_L1) %>% 
+  ggplot(aes(site, value)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
+  scale_color_manual(values = colours) + facet_wrap(~name, scales = 'free')
+ggsave("output/elements_heavy.pdf", width = 22, height = 16)
+
+ggplot(pXRF_heavy, aes(Rb_K12, K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() +
+  labs(title= "Rb and K", subtitle = paste0('Correlation: ', round(cor(pXRF_heavy$Rb_K12, pXRF_heavy$K_K12),2)))
+ggsave("output/rb_k.png", width=5, height=4.5)
+
+# Elements are are highly correlated, so we should reduce dimensions with PCA
+
 pca_heavy %>%
   prep() %>% 
   tidy(2) %>% 
@@ -156,12 +174,25 @@ ggsave("output/pca_heavy_loadings.png", width=4, height=2)
 
 # Dutch wrecks have more Ba, Rb, K, Mn, V, As, and less Y.
 
-pivot_longer(pXRF_heavy, Ba_K12:Zr_L1) %>% 
-  ggplot(aes(site, value)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
-  scale_color_manual(values = colours) + facet_wrap(~name, scales = 'free')
-ggsave("output/elements_heavy.pdf", width = 22, height = 16)
-## From this we can see that the elements of interest are, 
+juice(pca_trial) %>% ggplot(aes(PC1, year)) + geom_point(aes(colour=site), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) 
+ggsave("output/pc_year.png", width=5, height=4.5)
 
-ggplot(pXRF_heavy, aes(Rb_K12, K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
-  scale_color_manual(values = colours) + scale_y_log10() + scale_x_log10() + labs(title= "Rb and K", subtitle = paste0(''))
+ggplot(pXRF_heavy, aes(reorder(site, year), K_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=3, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10()
+ggsave("output/k_year.png", width=5, height=4.5)
+
+#Periods can be reliably separated on PC1, potassium here as an example.
+
+### Iron ----
+
+pXRF_heavy %>% arrange(-Fe_K12) %>% select(regno, Fe_K12) %>% top_n(10)
+#remove ZT3380, which is an order of a magnitude higher than the others, and we noted it was on an iron stain.
+
+pXRF_heavy %>% filter(regno != "ZT3380") %>% 
+ggplot(aes(construction, Fe_K12)) + geom_jitter(aes(colour=site), position=position_jitter(0.2), size=1, alpha=0.7) +
+  scale_color_manual(values = colours) + scale_y_log10()
+ggsave("output/iron_construction.png", width=5, height=4.5)
+
+# It looks like site is a factor here, with iron and composite wrecks all having higher levels of iron. However, the ranger overlaps.
 
