@@ -21,7 +21,7 @@ pXRF_light <- pXRF_light_raw %>%
 
 rm(pXRF_light_raw)
   
-### Normalise against Rhodium for light elements.
+### Normalise against rhodium for light elements.
 pXRF_heavy <- pXRF_heavy_raw %>% 
   mutate_at(vars(-id:-place), 
             ~normalise(., pXRF_heavy_raw$Rh_K12)) %>% 
@@ -58,16 +58,16 @@ var_ex <- function(pca, pc) {
   paste0('PC',pc,': ', var[pc], '%')
 }
 
-### Function to compute variance explained
+### Define ID variables, to be excluded from PCA
 id_vars <- c('id', 'regno', 'site', 'class', 'construction', 'year', 'place')
 
-### Function to compute variance explained
+### PCA on light elements
 pca_light <- pXRF_light %>% recipe(~.) %>%
   update_role(all_of(id_vars), new_role = "id") %>%
   step_normalize(all_predictors()) %>%
   step_pca(all_predictors()) %>% prep()
 
-### Function to compute variance explained
+### PCA on heavy elements
 pca_heavy <- pXRF_heavy %>%
   filter(site != 'TR') %>% 
   recipe(~.) %>%
