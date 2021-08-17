@@ -20,6 +20,6 @@ ggplot(sites) +
                          pad_x = unit(0, "in"), pad_y = unit(.1, "in"),
                          style = north_arrow_nautical) +
   labs(x=NULL, y=NULL)
-ggsave("output/glass_sites_map.png", width = 3.2, height = 4.5)  
+ggsave("output/glass_sites_map.png", width = 3.2, height = 4.5, bg='white')  
 #Source: WA Museum Shipwrecks Database. Basemap: Australian Bureau of Statistics via the ozmaps packages in R."
  
